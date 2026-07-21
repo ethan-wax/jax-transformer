@@ -1,7 +1,7 @@
 import jax
 import jax.numpy as jnp
 
-from src.pure_jax.layers import init_linear_params, linear
+from src.pure_jax.layers import init_linear_params, linear, layer_norm
 
 
 def test_init_linear_params():
@@ -22,9 +22,22 @@ def test_linear():
     assert (linear(params, x) == x + 1).all()
 
 
-def test_linear_rectangular():
+def test_linear_output_shape():
     w = jnp.eye(128, 64)
     b = jnp.zeros(128)
     params = {"w": w, "b": b}
     x = jnp.array([i for i in range(64)])
     assert (linear(params, x) == jnp.concat([x, jnp.zeros(64)])).any()
+
+
+def test_layer_norm_output_shape():
+    x = jnp.ones(128)
+    assert layer_norm(x).shape == x.shape
+
+
+def test_layer_norm():
+    key = jax.random.PRNGKey(42)
+    x = jax.random.randint(key, (128,), 0, 128)
+    result = layer_norm(x)
+    assert jnp.allclose(jnp.mean(result), 0)
+    assert jnp.allclose(jnp.var(result), 1)
