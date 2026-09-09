@@ -22,3 +22,14 @@ def layer_norm(x: jax.Array) -> jax.Array:
     mean = jnp.mean(x)
     var = jnp.var(x)
     return (x - mean) / jnp.sqrt(var)
+
+
+def positonal_encoding(x: jax.Array) -> jax.Array:
+    """Adds the positional element to the vector x"""
+    seq_len, d_model = x.shape
+    pos = jnp.arange(seq_len)[:, None]
+    dims = jnp.arange(d_model)[None, :]
+    omegas = 1.0 / (10000 ** (2 * dims / d_model))
+    angles = pos * omegas
+    pos_encs = jnp.where(dims % 2 == 0, jnp.sin(angles), jnp.cos(angles))
+    return x + pos_encs

@@ -1,7 +1,12 @@
 import jax
 import jax.numpy as jnp
 
-from src.pure_jax.layers import init_linear_params, linear, layer_norm
+from src.pure_jax.layers import (
+    init_linear_params,
+    linear,
+    layer_norm,
+    positonal_encoding,
+)
 
 
 def test_init_linear_params():
@@ -41,3 +46,14 @@ def test_layer_norm():
     result = layer_norm(x)
     assert jnp.allclose(jnp.mean(result), 0)
     assert jnp.allclose(jnp.var(result), 1)
+
+
+def test_positional_encodings():
+    x = jnp.zeros((128, 64))
+    pe = positonal_encoding(x)
+    assert pe.shape == x.shape
+    for i in range(128):
+        if i % 2 == 0:
+            assert jnp.allclose(pe[0, 0::2], 0.0)
+        else:
+            assert jnp.allclose(pe[0, 1::2], 1.0)
