@@ -6,12 +6,15 @@ from src.pure_jax.layers import (
     linear,
     layer_norm,
     positonal_encoding,
+    init_embedding_params,
+    embedding_lookup,
+    init_attention_params,
 )
 
 
 def test_init_linear_params():
     key = jax.random.PRNGKey(42)
-    params = init_linear_params(key, 128, 128)
+    params = init_linear_params(key, 128)
     assert "w" in params
     assert "b" in params
     assert params["w"].shape[0] == 128
@@ -28,7 +31,7 @@ def test_linear():
 
 
 def test_linear_output_shape():
-    w = jnp.eye(128, 64)
+    w = jnp.eye(64, 128)
     b = jnp.zeros(128)
     params = {"w": w, "b": b}
     x = jnp.array([i for i in range(64)])
@@ -57,3 +60,34 @@ def test_positional_encodings():
             assert jnp.allclose(pe[0, 0::2], 0.0)
         else:
             assert jnp.allclose(pe[0, 1::2], 1.0)
+
+
+def test_init_embeddings_params():
+    key = jax.random.PRNGKey(42)
+    params = init_embedding_params(key, 12, 128)
+    assert params.shape[0] == 12
+    assert params.shape[1] == 128
+
+
+def test_embeddings_lookup():
+    embeddings_matrix = jnp.eye(12, 128)
+    tokens = jnp.arange(6)
+    result = embedding_lookup(embeddings_matrix, tokens)
+    assert jnp.allclose(result, jnp.eye(6, 128))
+
+
+def test_init_attention_params():
+    key = jax.random.PRNGKey(42)
+    params = init_attention_params(key, 128)
+    assert "w_k" in params
+    assert "w_q" in params
+    assert "w_v" in params
+    assert "w_o" in params
+    assert params["w_k"].shape[0] == 128
+    assert params["w_k"].shape[1] == 128
+    assert params["w_q"].shape[0] == 128
+    assert params["w_q"].shape[1] == 128
+    assert params["w_v"].shape[0] == 128
+    assert params["w_v"].shape[1] == 128
+    assert params["w_o"].shape[0] == 128
+    assert params["w_o"].shape[1] == 128
