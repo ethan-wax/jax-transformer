@@ -67,8 +67,13 @@ def multihead_attention(
     k = (x @ params["w_k"]).reshape(seq_len, n_heads, d_head).transpose(1, 0, 2)
     q = (x @ params["w_q"]).reshape(seq_len, n_heads, d_head).transpose(1, 0, 2)
     v = (x @ params["w_v"]).reshape(seq_len, n_heads, d_head).transpose(1, 0, 2)
-    a = jax.nn.softmax((q @ k.transpose(0, 2, 1)) / jnp.sqrt(d_head)) @ v
-    h = a.transpose(1, 0, 2).reshape(seq_len, d_model)
+
+    scores = (q @ k.transpose(0, 2, 1)) / jnp.sqrt(d_head)
+    rows, cols = jnp.indices((seq_len, seq_len))
+    mask = jnp.where(cols > rows, -float("inf"), 0)
+    weights = jax.nn.softmax(scores + mask) @ v
+
+    h = weights.transpose(1, 0, 2).reshape(seq_len, d_model)
     o = h @ params["w_o"]
 
     return o
