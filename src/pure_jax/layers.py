@@ -1,13 +1,12 @@
 import jax
-from jax._src.pjit import with_layout_constraint
 import jax.numpy as jnp
 
 
-def init_linear_params(key: jax.Array, d_model: int) -> dict[str, jax.Array]:
+def init_linear_params(key: jax.Array, d_in: int, d_out: int) -> dict[str, jax.Array]:
     """Initialize a set of parameters for a linear layer"""
-    std = d_model**-0.5
-    w = jax.random.normal(key, (d_model, d_model)) * std
-    b = jnp.zeros(d_model)
+    std = d_in**-0.5
+    w = jax.random.normal(key, (d_in, d_out)) * std
+    b = jnp.zeros(d_out)
     return {"w": w, "b": b}
 
 
@@ -77,3 +76,17 @@ def multihead_attention(
     o = h @ params["w_o"]
 
     return o
+
+
+def feedforward(params: dict[str, dict[str, jax.Array]], x: jax.Array):
+    y = jax.nn.gelu(linear(params["linear_1"], x))
+    return linear(params["linear_2"], y)
+
+
+def init_feedforward_params(key: jax.Array, d_model: int, d_ff: int):
+    k1, k2 = jax.random.split(key)
+    params = {
+        "linear_1": init_linear_params(k1, d_model, d_ff),
+        "linear_2": init_linear_params(k2, d_ff, d_model),
+    }
+    return params

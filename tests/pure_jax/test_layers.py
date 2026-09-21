@@ -2,6 +2,8 @@ import jax
 import jax.numpy as jnp
 
 from src.pure_jax.layers import (
+    feedforward,
+    init_feedforward_params,
     init_linear_params,
     linear,
     layer_norm,
@@ -15,7 +17,7 @@ from src.pure_jax.layers import (
 
 def test_init_linear_params():
     key = jax.random.PRNGKey(42)
-    params = init_linear_params(key, 128)
+    params = init_linear_params(key, 128, 128)
     assert "w" in params
     assert "b" in params
     assert params["w"].shape[0] == 128
@@ -101,6 +103,15 @@ def test_multihead_attention():
     w_o = jnp.zeros((128, 128))
     params = {"w_k": w_k, "w_q": w_q, "w_v": w_v, "w_o": w_o}
     x = jnp.zeros((50, 128))
-    o = multihead_attention(params, x, 16)
-    assert o.shape[0] == 50
-    assert o.shape[1] == 128
+    z = multihead_attention(params, x, 16)
+    assert z.shape[0] == 50
+    assert z.shape[1] == 128
+
+
+def test_feedforward():
+    key = jax.random.PRNGKey(42)
+    params = init_feedforward_params(key, 128, 128 * 4)
+    x = jnp.zeros((50, 128))
+    z = feedforward(params, x)
+    assert z.shape[0] == 50
+    assert z.shape[1] == 128
