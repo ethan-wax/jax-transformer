@@ -1,4 +1,5 @@
 import jax
+from jax._src.pjit import with_layout_constraint
 import jax.numpy as jnp
 
 
@@ -55,3 +56,19 @@ def init_attention_params(key: jax.Array, d_model: int) -> dict[str, jax.Array]:
         "w_v": jax.random.normal(k3, (d_model, d_model)) * scalar,
         "w_o": jax.random.normal(k4, (d_model, d_model)) * scalar,
     }
+
+
+def multihead_attention(
+    params: dict[str, jax.Array], x: jax.Array, n_heads: int
+) -> jax.Array:
+    seq_len, d_model = x.shape
+    d_head = d_model // n_heads
+
+    k = (x @ params["w_k"]).reshape(seq_len, n_heads, d_head).transpose(1, 0, 2)
+    q = (x @ params["w_q"]).reshape(seq_len, n_heads, d_head).transpose(1, 0, 2)
+    v = (x @ params["w_v"]).reshape(seq_len, n_heads, d_head).transpose(1, 0, 2)
+    a = jax.nn.softmax((q @ k.transpose(0, 2, 1)) / jnp.sqrt(d_head)) @ v
+    h = a.transpose(1, 0, 2).reshape(seq_len, d_model)
+    o = h @ params["w_o"]
+
+    return o

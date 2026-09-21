@@ -9,6 +9,7 @@ from src.pure_jax.layers import (
     init_embedding_params,
     embedding_lookup,
     init_attention_params,
+    multihead_attention,
 )
 
 
@@ -91,3 +92,15 @@ def test_init_attention_params():
     assert params["w_v"].shape[1] == 128
     assert params["w_o"].shape[0] == 128
     assert params["w_o"].shape[1] == 128
+
+
+def test_multihead_attention():
+    w_k = jnp.zeros((128, 128))
+    w_q = jnp.zeros((128, 128))
+    w_v = jnp.zeros((128, 128))
+    w_o = jnp.zeros((128, 128))
+    params = {"w_k": w_k, "w_q": w_q, "w_v": w_v, "w_o": w_o}
+    x = jnp.zeros((50, 128))
+    o = multihead_attention(params, x, 16)
+    assert o.shape[0] == 50
+    assert o.shape[1] == 128
