@@ -1,6 +1,8 @@
 import jax
 import jax.numpy as jnp
 
+N_HEADS = 8
+
 
 def init_linear_params(key: jax.Array, d_in: int, d_out: int) -> dict[str, jax.Array]:
     """Initialize a set of parameters for a linear layer"""
@@ -88,5 +90,20 @@ def init_feedforward_params(key: jax.Array, d_model: int, d_ff: int):
     params = {
         "linear_1": init_linear_params(k1, d_model, d_ff),
         "linear_2": init_linear_params(k2, d_ff, d_model),
+    }
+    return params
+
+
+def transformer(params: dict, x: jax.Array, n_heads: int):
+    y = x + multihead_attention(params["attention"], layer_norm(x), n_heads)
+    z = y + feedforward(params["mlp"], y)
+    return z
+
+
+def init_transformer_params(key: jax.Array, n_heads: int, d_model: int, d_ff: int):
+    k1, k2 = jax.random.split(key)
+    params = {
+        "attention": init_attention_params(k1, d_model),
+        "mlp": init_feedforward_params(k2, d_model, d_ff),
     }
     return params
