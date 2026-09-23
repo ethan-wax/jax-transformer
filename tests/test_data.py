@@ -1,4 +1,5 @@
 import jax
+import jax.numpy as jnp
 from src.data import (
     decode,
     encode,
@@ -11,8 +12,8 @@ from src.data import (
 
 def test_encode():
     s = "0123456789+="
-    result = [n for n in range(12)]
-    assert encode(s) == result
+    result = jnp.array([n for n in range(12)])
+    assert (encode(s) == result).all()
 
 
 def test_decode():
@@ -23,7 +24,7 @@ def test_decode():
 
 def test_encode_decode_inverse():
     s = "0123456789+="
-    assert decode(encode(s)) == s
+    assert decode(encode(s).tolist()) == s
 
 
 def test_sample_problem():

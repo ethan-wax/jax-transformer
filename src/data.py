@@ -32,9 +32,9 @@ ID_TO_VOCAB = {
 }
 
 
-def encode(s: str) -> list[int]:
+def encode(s: str) -> jax.Array:
     """Convert s to a list of token ids"""
-    return [VOCAB_TO_ID[c] for c in s]
+    return jnp.array([VOCAB_TO_ID[c] for c in s])
 
 
 def decode(nums: list[int]) -> str:

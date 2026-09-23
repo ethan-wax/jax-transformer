@@ -1,8 +1,6 @@
 import jax
 import jax.numpy as jnp
 
-N_HEADS = 8
-
 
 def init_linear_params(key: jax.Array, d_in: int, d_out: int) -> dict[str, jax.Array]:
     """Initialize a set of parameters for a linear layer"""
