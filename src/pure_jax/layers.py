@@ -19,8 +19,8 @@ def linear(params: dict[str, jax.Array], x: jax.Array) -> jax.Array:
 
 def layer_norm(x: jax.Array) -> jax.Array:
     """Normalize x"""
-    mean = jnp.mean(x)
-    var = jnp.var(x)
+    mean = jnp.mean(x, axis=-1, keepdims=True)
+    var = jnp.var(x, axis=-1, keepdims=True)
     return (x - mean) / jnp.sqrt(var)
 
 
